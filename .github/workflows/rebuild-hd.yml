@@ -1,0 +1,51 @@
+name: Rebuild HD notes
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/rebuild-hd.yml"
+      - "tools/rebuild_hd.py"
+      - "00-基础/**"
+      - "01-哈希/**"
+      - "02-双指针/**"
+      - "03-滑动窗口/**"
+      - "04-子串/**"
+      - "05-数组/**"
+      - "06-链表/**"
+      - "07-BFS-DFS/**"
+      - "08-二叉树/**"
+      - "09-栈/**"
+      - "10-DP/**"
+
+permissions:
+  contents: write
+
+jobs:
+  rebuild:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Pillow
+        run: pip install pillow
+
+      - name: Rebuild cropped HD PNGs, README and PDF
+        run: python tools/rebuild_hd.py
+
+      - name: Commit generated files
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add README.md 高清题图 下载
+          if git diff --cached --quiet; then
+            echo "No generated changes"
+          else
+            git commit -m "docs: rebuild HD readable images and PDF [skip ci]"
+            git push
+          fi
